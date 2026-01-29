@@ -1,15 +1,29 @@
 import os
 from datetime import datetime
-from groq import Groq
-from dotenv import load_dotenv
 import streamlit as st
 
-# Naloži API ključ iz .env datoteke
-load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Poskusi uvoziti Groq
+try:
+    from groq import Groq
+except ImportError:
+    st.error("Paketa 'groq' ni nameščen. Preveri requirements.txt")
+    st.stop()
 
 # Naslov aplikacije
 st.title("Klepetalnik AI 🌟")
+
+# Preberi API ključ iz okolja
+api_key = os.getenv("GROQ_API_KEY")
+
+if not api_key:
+    st.error(
+        "API ključ ni nastavljen! "
+        "Pojdi v Streamlit Cloud → Manage app → Settings → Secrets in dodaj GROQ_API_KEY."
+    )
+    st.stop()  # Zaustavi app, dokler ni ključ nastavljen
+
+# Inicializacija Groq klienta
+client = Groq(api_key=api_key)
 
 # Inicializacija seznama sporočil v Streamlit session state
 if "messages" not in st.session_state:
@@ -26,7 +40,7 @@ def poslji_vprasanje():
     st.session_state.messages.append({"role": "user", "content": vnos})
 
     # Omejitev dolžine zgodovine (največ 10 sporočil, brez začetnega system sporočila)
-    if len(st.session_state.messages) > 11:  # 1 system + 10 ostalih
+    if len(st.session_state.messages) > 11:
         st.session_state.messages.pop(1)
 
     try:
@@ -44,7 +58,10 @@ def poslji_vprasanje():
         # Izpis porabe žetonov, če obstaja
         if hasattr(odgovor, "usage"):
             usage = odgovor.usage
-            st.write(f"**Poraba žetonov:** Vprašanje={usage['prompt_tokens']}, Odgovor={usage['completion_tokens']}, Skupaj={usage['total_tokens']}")
+            st.write(
+                f"**Poraba žetonov:** Vprašanje={usage['prompt_tokens']}, "
+                f"Odgovor={usage['completion_tokens']}, Skupaj={usage['total_tokens']}"
+            )
 
     except Exception as e:
         st.error(f"Prišlo je do napake: {e}")
@@ -68,3 +85,4 @@ if st.button("Shrani pogovor"):
         for msg in st.session_state.messages:
             f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
     st.success("Pogovor je shranjen v 'zgodovina_pogovora.txt'.")
+
