@@ -52,7 +52,7 @@ def poslji_vprasanje():
 # Naslov
 st.header("AI Asistent")
 
-# Input uporabnika
+# Input uporabnika – vedno spodaj
 st.text_input(
     "Vprašaj me:",
     key="vnos",
@@ -62,8 +62,8 @@ st.text_input(
 
 st.divider()
 
-# Prikaz zgodovine pogovora (najnovejše spodaj)
-for msg in st.session_state.messages:
+# Prikaz zgodovine pogovora – najnovejše sporočilo na vrhu
+for msg in reversed(st.session_state.messages):
     if msg["role"] == "system":
         continue
     elif msg["role"] == "user":
