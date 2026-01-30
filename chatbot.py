@@ -5,7 +5,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="AI Asistent", layout="centered")
 
-# API ključ
+# Preveri API ključ
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     st.error("❌ API ključ ni nastavljen! Dodaj GROQ_API_KEY v Streamlit Secrets.")
@@ -13,6 +13,7 @@ if not api_key:
 
 client = Groq(api_key=api_key)
 
+# Sistem prompt – omejen na vsebino spletne strani
 SYSTEM_PROMPT = """
 Si AI Asistent za to spletno stran. Komuniciraš samo o vsebini spletne strani:
 1️⃣ HRANA – Avtor govori o hrani, ki jo rad je in zakaj.
@@ -26,13 +27,16 @@ Odgovori so izključno v slovenščini, pregledni in slovnično pravilni.
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
+# Funkcija za pošiljanje vprašanja
 def poslji_vprasanje():
     vnos = st.session_state.vnos.strip()
     if not vnos:
         return
     st.session_state.messages.append({"role": "user", "content": vnos})
-    if len(st.session_state.messages) > 11:
+
+    if len(st.session_state.messages) > 11:  # omejimo zgodovino
         st.session_state.messages.pop(1)
+
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -41,48 +45,14 @@ def poslji_vprasanje():
         answer = response.choices[0].message.content
     except Exception:
         answer = "Prišlo je do tehnične napake."
+
     st.session_state.messages.append({"role": "assistant", "content": answer})
-    st.session_state.vnos = ""
+    st.session_state.vnos = ""  # počisti input po pošiljanju
 
-# =========================
-# CSS za chat
-# =========================
-st.markdown("""
-<style>
-.chat-box {
-    background-color: white;
-    border: 3px solid #FF6A00;
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    height: 600px;
-}
-.chat-history {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 8px;
-}
-.stTextInput>div>input {
-    background-color: white !important;
-    width: 100%;
-}
-.chat-title {
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 8px;
-}
-.chat-msg.user { color: #111; margin-bottom: 6px; }
-.chat-msg.assistant { color: #FF6A00; margin-bottom: 6px; }
-</style>
-""", unsafe_allow_html=True)
+# Naslov
+st.header("AI Asistent")
 
-# =========================
-# Chat container
-# =========================
-st.markdown('<div class="chat-box">', unsafe_allow_html=True)
-st.markdown('<div class="chat-title">AI Asistent</div>', unsafe_allow_html=True)
-
+# Input uporabnika
 st.text_input(
     "Vprašaj me:",
     key="vnos",
@@ -92,18 +62,16 @@ st.text_input(
 
 st.divider()
 
-st.markdown('<div class="chat-history">', unsafe_allow_html=True)
-for msg in reversed(st.session_state.messages):
+# Prikaz zgodovine pogovora (najnovejše spodaj)
+for msg in st.session_state.messages:
     if msg["role"] == "system":
         continue
     elif msg["role"] == "user":
-        st.markdown(f'<div class="chat-msg user">👤 {msg["content"]}</div>', unsafe_allow_html=True)
+        st.write(f"👤 {msg['content']}")
     else:
-        st.markdown(f'<div class="chat-msg assistant">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+        st.write(f"🤖 {msg['content']}")
 
-# Shrani pogovor
+# Gumb za shranjevanje pogovora
 if st.button("💾 Shrani pogovor"):
     with open("zgodovina_pogovora.txt", "a", encoding="utf-8") as f:
         f.write(f"\n--- Pogovor {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n")
