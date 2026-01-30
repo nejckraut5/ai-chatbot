@@ -1,53 +1,74 @@
 import os
 import streamlit as st
 from groq import Groq
+from datetime import datetime
 
 # =========================
-# OSNOVNE NASTAVITVE
+# Nastavitve strani
 # =========================
-st.set_page_config(page_title="AI Klepetalnik", layout="centered")
-st.title("AI pomočnik 🌟")
+st.set_page_config(page_title="AI Asistent", layout="centered")
+st.markdown(
+    "<h2 style='text-align:center; color:#FF6A00;'>AI Asistent</h2>", 
+    unsafe_allow_html=True
+)
 
 # API ključ
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     st.error(
-        "❌ API ključ ni nastavljen. Dodaj GROQ_API_KEY v Streamlit Cloud → Secrets."
+        "❌ API ključ ni nastavljen! Dodaj GROQ_API_KEY v Streamlit Secrets."
     )
     st.stop()
 
 client = Groq(api_key=api_key)
 
 # =========================
+# CSS za chat okno
+# =========================
+st.markdown("""
+<style>
+/* Belo ozadje chat okna */
+main > div.block-container {
+    background-color: white;
+    border: 3px solid #FF6A00; /* oranžna obroba */
+    border-radius: 12px;
+    padding: 16px;
+}
+
+/* Besedilo uporabnika in AI-ja */
+div.stTextInput > label, div.stButton > button {
+    font-size: 16px;
+}
+
+/* Scrollbar za zgodovino pogovora */
+[data-testid="stVerticalBlock"] {
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
 # SYSTEM PROMPT
 # =========================
-
 SYSTEM_PROMPT = """
-Si AI chatbot, ki deluje IZKLJUČNO kot pomočnik za to spletno stran.
-📄 SPLETNA STRAN IMA 3 STRANI:
-
+Si AI Asistent za to spletno stran. Komuniciraš samo o vsebini spletne strani:
 1️⃣ HRANA – Avtor govori o hrani, ki jo rad je in zakaj.
 2️⃣ ŠPORT – Nogomet, košarka, odbojka.
 3️⃣ AVTO – Toyota Aygo MK1, najboljši avto.
 
-❗ PRAVILA:
-- Odgovarjaš SAMO o tej vsebini.
-- Vljudno zavrneš zunanje teme.
-- Izključno v slovenščini.
-- Jasno, pregledno, slovnično pravilno.
-- Spomin znotraj seje.
+Če te vpraša kaj drugega, vljudno poveš, da nimaš informacij. 
+Odgovori so izključno v slovenščini, pregledni in slovnično pravilni.
 """
 
 # =========================
-# SESSION STATE
+# Session state
 # =========================
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "system", "content": SYSTEM_PROMPT}
-    ]
+    st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
 # =========================
-# FUNKCIJA ZA POŠILJANJE VPRAŠANJA
+# Funkcija za pošiljanje vprašanja
 # =========================
 def poslji_vprasanje():
     vnos = st.session_state.vnos.strip()
@@ -56,7 +77,6 @@ def poslji_vprasanje():
 
     st.session_state.messages.append({"role": "user", "content": vnos})
 
-    # omejitev zgodovine (system + 10 sporočil)
     if len(st.session_state.messages) > 11:
         st.session_state.messages.pop(1)
 
@@ -73,7 +93,7 @@ def poslji_vprasanje():
     st.session_state.vnos = ""
 
 # =========================
-# UPORABNIŠKI VNOS
+# UI za vnos uporabnika
 # =========================
 st.text_input(
     "Vprašaj me nekaj o spletni strani:",
@@ -85,9 +105,8 @@ st.text_input(
 st.divider()
 
 # =========================
-# PRIKAZ POGOVORA (NOVEJŠE NA VRHU)
+# Prikaz pogovora (novejše na vrhu)
 # =========================
-# Obrnemo seznam tako, da je najnovejše sporočilo na vrhu
 for msg in reversed(st.session_state.messages):
     if msg["role"] == "system":
         continue
@@ -97,7 +116,7 @@ for msg in reversed(st.session_state.messages):
         st.markdown(f"**🤖 AI:** {msg['content']}")
 
 # =========================
-# SHRANJEVANJE POGOVORA
+# Shrani pogovor
 # =========================
 if st.button("💾 Shrani pogovor"):
     with open("zgodovina_pogovora.txt", "a", encoding="utf-8") as f:
