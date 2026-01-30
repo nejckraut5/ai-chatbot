@@ -50,35 +50,31 @@ def poslji_vprasanje():
 st.markdown("""
 <style>
 
-.chat-title {
-    text-align: center;
-    color: #FF6A00;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 12px;
-}
-.chat-msg {
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-}
-.chat-msg.user {
-    background-color: #f0f0f0;
-    text-align: right;
-}
-.chat-msg.assistant {
-    background-color: #fff3e0;
-    text-align: left;
+# Chat container CSS
+st.markdown("""
+<style>
+.chat-box {
+    background-color: white;
+    border: 3px solid #FF6A00;
+    border-radius: 12px;
+    padding: 16px;
+    max-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 .chat-history {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
+    padding-right: 8px;
 }
 .stTextInput>div>input {
     background-color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
+
 
 # =========================
 # Chat container
@@ -114,4 +110,5 @@ if st.button("💾 Shrani pogovor"):
             if msg["role"] != "system":
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
     st.success("Pogovor je shranjen.")
+
 
