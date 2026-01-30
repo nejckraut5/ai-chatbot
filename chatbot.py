@@ -45,36 +45,37 @@ def poslji_vprasanje():
     st.session_state.vnos = ""
 
 # =========================
-# CSS za celoten chat bot
+# CSS za chat
 # =========================
-st.markdown("""
-<style>
-
-# Chat container CSS
 st.markdown("""
 <style>
 .chat-box {
     background-color: white;
     border: 3px solid #FF6A00;
     border-radius: 12px;
-    padding: 16px;
-    max-width: 100%;
-    height: 100%;
+    padding: 12px;
     display: flex;
     flex-direction: column;
+    height: 600px;
 }
 .chat-history {
     flex: 1;
     overflow-y: auto;
-    padding-right: 8px;
+    margin-bottom: 8px;
 }
 .stTextInput>div>input {
     background-color: white !important;
+    width: 100%;
 }
+.chat-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+.chat-msg.user { color: #111; margin-bottom: 6px; }
+.chat-msg.assistant { color: #FF6A00; margin-bottom: 6px; }
 </style>
 """, unsafe_allow_html=True)
-
-
 
 # =========================
 # Chat container
@@ -110,5 +111,3 @@ if st.button("💾 Shrani pogovor"):
             if msg["role"] != "system":
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
     st.success("Pogovor je shranjen.")
-
-
