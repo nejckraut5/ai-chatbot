@@ -7,12 +7,55 @@ from datetime import datetime
 # Nastavitve strani
 # =========================
 st.set_page_config(page_title="AI Asistent", layout="centered")
-st.markdown(
-    "<h2 style='text-align:center; color:#FF6A00;'>AI Asistent</h2>", 
-    unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+/* Celoten chat container */
+.chat-container {
+    background-color: white !important;
+    border: 3px solid #FF6A00; /* oranžna obroba */
+    border-radius: 12px;
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
 
+/* Naslov */
+.chat-title {
+    text-align: center;
+    color: #FF6A00;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* Vsebina pogovora */
+.chat-msg {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+}
+
+.chat-msg.user {
+    background-color: #f0f0f0;
+    text-align: right;
+}
+
+.chat-msg.assistant {
+    background-color: #fff3e0;
+    text-align: left;
+}
+
+/* Scrollable container */
+.chat-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
 # API ključ
+# =========================
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     st.error(
@@ -23,33 +66,7 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # =========================
-# CSS za chat okno
-# =========================
-st.markdown("""
-<style>
-/* Belo ozadje chat okna */
-main > div.block-container {
-    background-color: white;
-    border: 3px solid #FF6A00; /* oranžna obroba */
-    border-radius: 12px;
-    padding: 16px;
-}
-
-/* Besedilo uporabnika in AI-ja */
-div.stTextInput > label, div.stButton > button {
-    font-size: 16px;
-}
-
-/* Scrollbar za zgodovino pogovora */
-[data-testid="stVerticalBlock"] {
-    max-height: 400px;
-    overflow-y: auto;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# =========================
-# SYSTEM PROMPT
+# System prompt
 # =========================
 SYSTEM_PROMPT = """
 Si AI Asistent za to spletno stran. Komuniciraš samo o vsebini spletne strani:
@@ -61,9 +78,6 @@ Si AI Asistent za to spletno stran. Komuniciraš samo o vsebini spletne strani:
 Odgovori so izključno v slovenščini, pregledni in slovnično pravilni.
 """
 
-# =========================
-# Session state
-# =========================
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
@@ -93,27 +107,31 @@ def poslji_vprasanje():
     st.session_state.vnos = ""
 
 # =========================
-# UI za vnos uporabnika
+# Chat container
 # =========================
-st.text_input(
-    "Vprašaj me nekaj o spletni strani:",
-    key="vnos",
-    placeholder="Vprašajte o hrani, športu ali avtom...",
-    on_change=poslji_vprasanje
-)
+with st.container():
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    st.markdown('<div class="chat-title">AI Asistent</div>', unsafe_allow_html=True)
 
-st.divider()
+    st.text_input(
+        "Vprašaj me nekaj o spletni strani:",
+        key="vnos",
+        placeholder="Vprašajte o hrani, športu ali avtom...",
+        on_change=poslji_vprasanje
+    )
 
-# =========================
-# Prikaz pogovora (novejše na vrhu)
-# =========================
-for msg in reversed(st.session_state.messages):
-    if msg["role"] == "system":
-        continue
-    elif msg["role"] == "user":
-        st.markdown(f"**👤 Vi:** {msg['content']}")
-    else:
-        st.markdown(f"**🤖 AI:** {msg['content']}")
+    st.divider()
+
+    st.markdown('<div class="chat-history">', unsafe_allow_html=True)
+    for msg in reversed(st.session_state.messages):
+        if msg["role"] == "system":
+            continue
+        elif msg["role"] == "user":
+            st.markdown(f'<div class="chat-msg user">👤 {msg["content"]}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="chat-msg assistant">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
 # Shrani pogovor
