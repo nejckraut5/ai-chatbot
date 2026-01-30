@@ -2,44 +2,116 @@ import os
 from datetime import datetime
 import streamlit as st
 
-# Poskusi uvoziti Groq
+# ===============================
+# UVOZ GROQ
+# ===============================
 try:
     from groq import Groq
 except ImportError:
-    st.error("Paketa 'groq' ni nameščen. Preveri requirements.txt")
+    st.error("Paket 'groq' ni nameščen. Preveri requirements.txt.")
     st.stop()
 
-# Naslov aplikacije
-st.title("Klepetalnik AI 🌟")
+# ===============================
+# OSNOVNI PODATKI O STRANI
+# ===============================
 
-# Preberi API ključ iz okolja
+PODROCJE_DELOVANJA = """
+Ta chatbot je namenjen IZKLJUČNO pomoči uporabnikom te spletne strani.
+
+Obseg delovanja:
+- razlaga delovanja AI chatbota
+- pomoč pri uporabi aplikacije
+- osnovna tehnična podpora glede te strani
+- vprašanja, povezana s funkcionalnostmi in namenom strani
+
+Chatbot NE odgovarja na:
+- splošna vprašanja
+- osebne teme
+- recepte, zdravje, pravo, finance
+- teme, ki niso neposredno povezane s to spletno stranjo
+"""
+
+ZAVRNITVENI_ODGOVOR = (
+    "Za to temo nimam informacij. "
+    "Pomagam lahko samo z vprašanji, ki so povezana s to spletno stranjo in njenim delovanjem."
+)
+
+# ===============================
+# STREAMLIT NASTAVITVE
+# ===============================
+
+st.set_page_config(
+    page_title="AI Chatbot",
+    page_icon="💬",
+    layout="centered"
+)
+
+st.title("AI pomočnik 💬")
+st.caption("Podpora izključno za to spletno stran")
+
+# ===============================
+# GROQ API KLJUČ
+# ===============================
+
 api_key = os.getenv("GROQ_API_KEY")
 
 if not api_key:
     st.error(
-        "API ključ ni nastavljen! "
-        "Pojdi v Streamlit Cloud → Manage app → Settings → Secrets in dodaj GROQ_API_KEY."
+        "❌ API ključ ni nastavljen.\n\n"
+        "V Streamlit Cloud pojdi na:\n"
+        "**Manage app → Settings → Secrets**\n\n"
+        "in dodaj:\n"
+        "`GROQ_API_KEY = \"tvoj_kljuc\"`"
     )
-    st.stop()  # Zaustavi app, dokler ni ključ nastavljen
+    st.stop()
 
-# Inicializacija Groq klienta
 client = Groq(api_key=api_key)
 
-# Inicializacija seznama sporočil v Streamlit session state
+# ===============================
+# SESSION STATE (SPOMIN SEJE)
+# ===============================
+# Streamlit samodejno izbriše session state ob osvežitvi ali zapustitvi strani
+
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "system", "content": "Si prijazen asistent, strokovnjak za informatiko."}
+        {
+            "role": "system",
+            "content": f"""
+Ti si AI chatbot z NASLEDNJIMI STROGIMI PRAVILI:
+
+1. Komuniciraš IZKLJUČNO v slovenščini.
+2. Odgovarjaš LE na vprašanja, povezana s to spletno stranjo.
+3. Če vprašanje ni v obsegu, vedno odgovoriš z:
+   "{ZAVRNITVENI_ODGOVOR}"
+4. Odgovori morajo biti:
+   - jasni
+   - pregledni
+   - slovnično pravilni
+   - prijazni in vljudni
+5. Znotraj seje si zapomniš pogovor in razumeš podvprašanja.
+6. Ne ugibaš, ne dodajaš informacij in ne izmišljuješ vsebine.
+
+OPIS PODROČJA:
+{PODROCJE_DELOVANJA}
+"""
+        }
     ]
 
-# Funkcija za pošiljanje sporočila in pridobitev odgovora
+# ===============================
+# FUNKCIJA ZA POŠILJANJE VPRAŠANJA
+# ===============================
+
 def poslji_vprasanje():
-    vnos = st.session_state.vnos  # preberi tekst iz session state
+    vnos = st.session_state.vnos.strip()
+
     if not vnos:
         return
 
-    st.session_state.messages.append({"role": "user", "content": vnos})
+    st.session_state.messages.append(
+        {"role": "user", "content": vnos}
+    )
 
-    # Omejitev dolžine zgodovine (največ 10 sporočil, brez začetnega system sporočila)
+    # omejitev zgodovine (1 system + 10 sporočil)
     if len(st.session_state.messages) > 11:
         st.session_state.messages.pop(1)
 
@@ -49,40 +121,57 @@ def poslji_vprasanje():
             messages=st.session_state.messages
         )
 
-        ai_text = odgovor.choices[0].message.content
-        st.session_state.messages.append({"role": "assistant", "content": ai_text})
+        ai_odgovor = odgovor.choices[0].message.content.strip()
 
-        # Izpis AI odgovora
-        st.write(f"**AI:** {ai_text}")
+    except Exception:
+        ai_odgovor = (
+            "Prišlo je do tehnične napake. "
+            "Prosimo, poskusite znova čez nekaj trenutkov."
+        )
 
-        # Izpis porabe žetonov, če obstaja
-        if hasattr(odgovor, "usage"):
-            usage = odgovor.usage
-            st.write(
-                f"**Poraba žetonov:** Vprašanje={usage['prompt_tokens']}, "
-                f"Odgovor={usage['completion_tokens']}, Skupaj={usage['total_tokens']}"
-            )
+    st.session_state.messages.append(
+        {"role": "assistant", "content": ai_odgovor}
+    )
 
-    except Exception as e:
-        st.error(f"Prišlo je do napake: {e}")
-
-    # Po pošiljanju počisti textbox
     st.session_state.vnos = ""
 
-# UI za vnos uporabnika, sproži poslji_vprasanje ob Enter
-st.text_input("Vi:", key="vnos", on_change=poslji_vprasanje)
+# ===============================
+# UPORABNIŠKI VNOS
+# ===============================
 
-# Prikaz celotnega pogovora
-st.subheader("Zgodovina pogovora:")
+st.text_input(
+    "Vaše vprašanje:",
+    key="vnos",
+    placeholder="Vprašajte nekaj o tej spletni strani …",
+    on_change=poslji_vprasanje
+)
+
+# ===============================
+# IZPIS POGOVORA
+# ===============================
+
+st.subheader("Pogovor")
+
 for msg in st.session_state.messages:
-    role = msg['role'].capitalize()
-    st.write(f"**{role}:** {msg['content']}")
+    if msg["role"] == "system":
+        continue
 
-# Gumb za shranjevanje pogovora
-if st.button("Shrani pogovor"):
+    if msg["role"] == "user":
+        st.markdown(f"**Vi:** {msg['content']}")
+    else:
+        st.markdown(f"**Chatbot:** {msg['content']}")
+
+# ===============================
+# SHRANJEVANJE (LOKALNO)
+# ===============================
+
+if st.button("💾 Shrani pogovor"):
     with open("zgodovina_pogovora.txt", "a", encoding="utf-8") as f:
-        f.write(f"\n--- Pogovor ob {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+        f.write(
+            f"\n--- Pogovor {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n"
+        )
         for msg in st.session_state.messages:
-            f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
-    st.success("Pogovor je shranjen v 'zgodovina_pogovora.txt'.")
+            if msg["role"] != "system":
+                f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
+    st.success("Pogovor je shranjen.")
