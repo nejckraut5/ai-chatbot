@@ -49,14 +49,7 @@ def poslji_vprasanje():
 # =========================
 st.markdown("""
 <style>
-.chat-box {
-    background-color: white !important;
-    border: 3px solid #FF6A00;
-    border-radius: 12px;
-    padding: 16px;
-    max-width: 600px;
-    margin: 0 auto;
-}
+
 .chat-title {
     text-align: center;
     color: #FF6A00;
@@ -121,3 +114,4 @@ if st.button("💾 Shrani pogovor"):
             if msg["role"] != "system":
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
     st.success("Pogovor je shranjen.")
+
