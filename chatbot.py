@@ -52,13 +52,36 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Ozadje */
     .stApp {
         background-color: white;
+        color: black;
+    }
+
+    /* Vsi teksti */
+    body, p, span, div {
+        color: black !important;
+    }
+
+    /* Naslovi */
+    h1, h2, h3 {
+        color: black;
+    }
+
+    /* Chatbot ime (Chatbot:) */
+    strong:contains("Chatbot") {
+        color: orange !important;
+    }
+
+    /* Alternativa – pobarva vse chatbot odgovore */
+    .stMarkdown {
+        color: black;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # ===============================
 # NASLOV STRANI
@@ -205,4 +228,5 @@ if st.button("💾 Shrani pogovor"):
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
     st.success("Pogovor je shranjen.")
+
 
