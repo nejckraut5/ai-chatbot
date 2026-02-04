@@ -16,23 +16,17 @@ except ImportError:
 # ===============================
 
 PODROCJE_DELOVANJA = """
-Chatbot je specializiran IZKLJUČNO za vsebino te spletne strani.
+Chatbot je specializiran IZKLJUČNO za vsebino posamezne spletne strani.
 
-Dovoljena področja:
-1️⃣ HRANA – Avtor govori o hrani, ki jo rad je in zakaj.
-2️⃣ ŠPORT – Nogomet, košarka, odbojka.
-3️⃣ AVTO – Toyota Aygo MK1 kot najboljši avto.
-
-Chatbot NE odgovarja na:
-- splošna vprašanja
-- osebne teme
-- zdravje, pravo, finance
-- teme, ki niso povezane z zgornjimi področji
+Dovoljene strani in vsebine:
+1️⃣ HRANA – spletna stran je namenjena hrani, ki jo avtor rad je, s predstavitvijo njegovih najljubših jedi in razlogov, zakaj jih ima rad.
+2️⃣ ŠPORT – spletna stran pokriva športe, ki jih avtor rad spremlja: nogomet, košarka, odbojka, s poudarkom na osebnih preferencah in interesih.
+3️⃣ AVTO – spletna stran je posvečena avtomobilom, posebej Toyota Aygo MK1, ki ga avtor smatra za najboljšega avto, z opisom značilnosti in razlogov.
 """
 
 ZAVRNITVENI_ODGOVOR = (
     "Za to temo nimam informacij. "
-    "Pomagam lahko samo z vprašanji, ki so povezana z vsebino te spletne strani."
+    "Pomagam lahko samo z vprašanji, ki so povezana z vsebino teh spletnih strani."
 )
 
 # ===============================
@@ -51,25 +45,19 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Ozadje aplikacije */
     .stApp {
         background-color: white;
         color: black;
     }
 
-    /* Ves tekst */
     body, p, span, div, label {
         color: black !important;
     }
 
-    /* Naslovi */
     h1, h2, h3 {
         color: black;
     }
 
-    /* GUMB SHRANI POGOVOR */
-    button[kind="secondary"],
-    button[kind="primary"],
     div[data-testid="stButton"] > button {
         background-color: white !important;
         color: black !important;
@@ -77,7 +65,6 @@ st.markdown(
         border-radius: 6px !important;
     }
 
-    /* Hover efekt (ostane bel) */
     div[data-testid="stButton"] > button:hover {
         background-color: white !important;
         color: black !important;
@@ -87,8 +74,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
 
 # ===============================
 # NASLOV STRANI
@@ -100,7 +85,7 @@ st.markdown(
 )
 
 st.markdown(
-    "<p style='text-align:center;color:gray;'>Podpora izključno za to spletno stran</p>",
+    "<p style='text-align:center;color:gray;'>Podpora izključno za vsebino posameznih spletnih strani: Hrana, Šport, Avto</p>",
     unsafe_allow_html=True
 )
 
@@ -131,25 +116,24 @@ if "messages" not in st.session_state:
         {
             "role": "system",
             "content": f"""
-Ti si AI asistent za to spletno stran.
+Ti si AI asistent za te spletne strani.
 
 STROGA PRAVILA:
 1. Odgovarjaš IZKLJUČNO v slovenščini.
-2. Odgovarjaš SAMO na teme, povezane s to spletno stranjo.
-3. Dovoljene teme so:
-   - HRANA (kaj avtor rad je in zakaj)
-   - ŠPORT (nogomet, košarka, odbojka)
-   - AVTO (Toyota Aygo MK1 kot najboljši avto)
-4. Če vprašanje NI povezano z dovoljenimi temami,
+2. Odgovarjaš SAMO na teme, povezane s posamezno stranjo:
+   - HRANA: vsebina o hrani, ki jo avtor rad je.
+   - ŠPORT: nogomet, košarka, odbojka.
+   - AVTO: Toyota Aygo MK1 kot najboljši avto.
+3. Če vprašanje NI povezano z dovoljenimi temami,
    vedno odgovoriš z:
    "{ZAVRNITVENI_ODGOVOR}"
-5. Odgovori morajo biti:
+4. Odgovori morajo biti:
    - jasni
    - pregledni
    - slovnično pravilni
    - vljudni
-6. Ne ugibaš, ne dodajaš informacij in si ne izmišljuješ vsebine.
-7. Znotraj seje si zapomniš pogovor.
+5. Ne ugibaš in ne izmišljuješ vsebine.
+6. Znotraj seje si zapomniš pogovor.
 
 OPIS PODROČJA:
 {PODROCJE_DELOVANJA}
@@ -202,24 +186,31 @@ def poslji_vprasanje():
 st.text_input(
     "Vaše vprašanje:",
     key="vnos",
-    placeholder="Vprašajte nekaj o tej spletni strani …",
+    placeholder="Vprašajte nekaj o teh spletnih straneh …",
     on_change=poslji_vprasanje
 )
 
 # ===============================
-# IZPIS POGOVORA
+# IZPIS POGOVORA (najnovejše zgoraj)
 # ===============================
 
 st.subheader("Pogovor")
 
-for msg in st.session_state.messages:
+# Obračamo seznam, da se najnovejše sporočilo prikaže na vrhu
+for msg in reversed(st.session_state.messages):
     if msg["role"] == "system":
         continue
 
     if msg["role"] == "user":
-        st.markdown(f"**Vi:** {msg['content']}")
+        st.markdown(
+            f"<div style='background-color:#e0f2fe; padding:10px; border-radius:10px;'>Vi: {msg['content']}</div>",
+            unsafe_allow_html=True
+        )
     else:
-        st.markdown(f"**Chatbot:** {msg['content']}")
+        st.markdown(
+            f"<div style='background-color:#fde8d0; padding:10px; border-radius:10px;'><strong style='color:orange;'>Chatbot:</strong> {msg['content']}</div>",
+            unsafe_allow_html=True
+        )
 
 # ===============================
 # SHRANJEVANJE POGOVORA
@@ -235,6 +226,3 @@ if st.button("💾 Shrani pogovor"):
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
     st.success("Pogovor je shranjen.")
-
-
-
