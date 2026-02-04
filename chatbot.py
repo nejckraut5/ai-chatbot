@@ -48,18 +48,17 @@ st.set_page_config(
 # ===============================
 # OSNOVNI CSS (če okolje to podpira)
 # ===============================
-
 st.markdown(
     """
     <style>
-    /* Ozadje */
+    /* Ozadje aplikacije */
     .stApp {
         background-color: white;
         color: black;
     }
 
-    /* Vsi teksti */
-    body, p, span, div {
+    /* Ves tekst */
+    body, p, span, div, label {
         color: black !important;
     }
 
@@ -68,14 +67,21 @@ st.markdown(
         color: black;
     }
 
-    /* Chatbot ime (Chatbot:) */
-    strong:contains("Chatbot") {
-        color: orange !important;
+    /* GUMB SHRANI POGOVOR */
+    button[kind="secondary"],
+    button[kind="primary"],
+    div[data-testid="stButton"] > button {
+        background-color: white !important;
+        color: black !important;
+        border: 1px solid black !important;
+        border-radius: 6px !important;
     }
 
-    /* Alternativa – pobarva vse chatbot odgovore */
-    .stMarkdown {
-        color: black;
+    /* Hover efekt (ostane bel) */
+    div[data-testid="stButton"] > button:hover {
+        background-color: white !important;
+        color: black !important;
+        border: 1px solid black !important;
     }
     </style>
     """,
@@ -83,12 +89,13 @@ st.markdown(
 )
 
 
+
 # ===============================
 # NASLOV STRANI
 # ===============================
 
 st.markdown(
-    "<h1 style='text-align:center;'>AI pomočnik 💬</h1>",
+    "<h1 style='text-align:center;'>AI asistent 💬</h1>",
     unsafe_allow_html=True
 )
 
@@ -228,5 +235,6 @@ if st.button("💾 Shrani pogovor"):
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
     st.success("Pogovor je shranjen.")
+
 
 
