@@ -53,7 +53,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-color: #f5f7fb;
+        background-color: white;
     }
     </style>
     """,
@@ -205,3 +205,4 @@ if st.button("💾 Shrani pogovor"):
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
     st.success("Pogovor je shranjen.")
+
