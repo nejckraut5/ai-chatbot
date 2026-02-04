@@ -19,9 +19,9 @@ PODROCJE_DELOVANJA = """
 Chatbot je specializiran IZKLJUČNO za vsebino posamezne spletne strani.
 
 Dovoljene strani in vsebine:
-1️⃣ HRANA – spletna stran je namenjena hrani, ki jo avtor rad je, s predstavitvijo njegovih najljubših jedi in razlogov, zakaj jih ima rad.
-2️⃣ ŠPORT – spletna stran pokriva športe, ki jih avtor rad spremlja: nogomet, košarka, odbojka, s poudarkom na osebnih preferencah in interesih.
-3️⃣ AVTO – spletna stran je posvečena avtomobilom, posebej Toyota Aygo MK1, ki ga avtor smatra za najboljšega avto, z opisom značilnosti in razlogov.
+1️⃣ prva stran govori o HRANA – spletna stran je namenjena hrani, ki jo avtor rad je, s predstavitvijo njegovih najljubših jedi in razlogov, zakaj jih ima rad.
+2️⃣ druga stran govori o ŠPORT – spletna stran pokriva športe, ki jih avtor rad spremlja: nogomet, košarka, odbojka, s poudarkom na osebnih preferencah in interesih.
+3️⃣ in trejta stran govori o AVTO – spletna stran je posvečena avtomobilom, posebej Toyota Aygo MK1, ki ga avtor smatra za najboljšega avto, z opisom značilnosti in razlogov.
 """
 
 ZAVRNITVENI_ODGOVOR = (
@@ -226,3 +226,4 @@ if st.button("💾 Shrani pogovor"):
                 f.write(f"{msg['role'].capitalize()}: {msg['content']}\n")
 
     st.success("Pogovor je shranjen.")
+
